@@ -15,6 +15,17 @@
  * sbtopk_launch_vec_dispatch templates.  Included by per-K compilation
  * units (TensorTopKSbtopkKernel_k*.cpp) to split AOT compilation across
  * files.
+ *
+ * Algorithm:
+ *   Phase 1: Each lane scans nelements/32 elements, maintains a sorted top-k
+ *            buffer via insertion sort (fully unrolled, no branches on
+ *            direction thanks to compile-time Largest template param).
+ *   Phase 2: 5 levels of pairwise bitonic merge via sub-group shuffles
+ *            to combine 32 per-lane buffers into one global top-k.
+ *   Phase 3: Lane 0 writes k results. Output is already sorted.
+ *
+ * Dispatch: k <= 16 and enough segments (large batch) and nelements >= 32
+ *           routes to subgroup top-k; otherwise falls back to original.
  */
 
 #pragma once
