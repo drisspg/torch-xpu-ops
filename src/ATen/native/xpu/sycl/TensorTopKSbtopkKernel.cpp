@@ -31,8 +31,8 @@ static bool subgroup_topk_try_launch(
   int K_sel = std::min<int>(
       static_cast<int>(c10::llvm::PowerOf2Ceil(static_cast<uint64_t>(k))), 16);
 
-#define SBTOPK_LAUNCH(KVAL)  \
-  sbtopk_k##KVAL##_launch( \
+#define SBTOPK_LAUNCH(KVAL) \
+  sbtopk_k##KVAL##_launch(  \
       self,                 \
       nsegments,            \
       nelements,            \
