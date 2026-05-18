@@ -31,58 +31,35 @@ static bool subgroup_topk_try_launch(
   int K_sel = std::min<int>(
       static_cast<int>(c10::llvm::PowerOf2Ceil(static_cast<uint64_t>(k))), 16);
 
+#define SBTOPK_LAUNCH(KVAL)  \
+  sbtopk_k##KVAL##_launch( \
+      self,                 \
+      nsegments,            \
+      nelements,            \
+      static_cast<int>(k),  \
+      largest,              \
+      values,               \
+      indices)
+
   switch (K_sel) {
     case 1:
-      sbtopk_k1_launch(
-          self,
-          nsegments,
-          nelements,
-          static_cast<int>(k),
-          largest,
-          values,
-          indices);
+      SBTOPK_LAUNCH(1);
       break;
     case 2:
-      sbtopk_k2_launch(
-          self,
-          nsegments,
-          nelements,
-          static_cast<int>(k),
-          largest,
-          values,
-          indices);
+      SBTOPK_LAUNCH(2);
       break;
     case 4:
-      sbtopk_k4_launch(
-          self,
-          nsegments,
-          nelements,
-          static_cast<int>(k),
-          largest,
-          values,
-          indices);
+      SBTOPK_LAUNCH(4);
       break;
     case 8:
-      sbtopk_k8_launch(
-          self,
-          nsegments,
-          nelements,
-          static_cast<int>(k),
-          largest,
-          values,
-          indices);
+      SBTOPK_LAUNCH(8);
       break;
     default:
-      sbtopk_k16_launch(
-          self,
-          nsegments,
-          nelements,
-          static_cast<int>(k),
-          largest,
-          values,
-          indices);
+      SBTOPK_LAUNCH(16);
       break;
   }
+
+#undef SBTOPK_LAUNCH
 
   return true;
 }
